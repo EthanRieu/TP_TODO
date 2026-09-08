@@ -2,8 +2,8 @@ services:
   app:
     build: .
     restart: unless-stopped
-    env_file:
-      - .env
+    environment:
+      NUXT_DATABASE_URL: ${NUXT_DATABASE_URL:-postgres://todo:todo@db:5432/todo}
     depends_on:
       db:
         condition: service_healthy
@@ -21,8 +21,10 @@ services:
   db:
     image: postgres:17-alpine
     restart: unless-stopped
-    env_file:
-      - .env
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-todo}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-todo}
+      POSTGRES_DB: ${POSTGRES_DB:-todo}
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
