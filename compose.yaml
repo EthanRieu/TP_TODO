@@ -1,0 +1,38 @@
+services:
+  app:
+    build: .
+    restart: unless-stopped
+    environment:
+      NUXT_DATABASE_URL: ${NUXT_DATABASE_URL:-postgres://todo:todo@db:5432/todo}
+    depends_on:
+      db:
+        condition: service_healthy
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+    depends_on:
+      - app
+
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-todo}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-todo}
+      POSTGRES_DB: ${POSTGRES_DB:-todo}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
