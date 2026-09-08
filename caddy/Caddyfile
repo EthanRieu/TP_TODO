@@ -1,4 +1,4 @@
-https://192.168.137.137 {
+https://localhost, https://192.168.137.137 {
     tls internal
     encode gzip
     reverse_proxy app:3000
